@@ -1,22 +1,32 @@
 from typing import Dict, List
-
+import re
 import pandas as pd
+import polyline
+from math import radians, sin, cos, sqrt, atan2
 
 
 def reverse_by_n_elements(lst: List[int], n: int) -> List[int]:
     """
     Reverses the input list by groups of n elements.
     """
-    # Your code goes here.
-    return lst
+    result = []
+    for i in range(0, len(lst), n):
+        group = lst[i:i+n]
+        result.extend(group[::-1])
+    return result
 
 
 def group_by_length(lst: List[str]) -> Dict[int, List[str]]:
     """
     Groups the strings by their length and returns a dictionary.
     """
-    # Your code here
-    return dict
+    result = {}
+    for string in lst:
+        length = len(string)
+        if length not in result:
+            result[length] = []
+        result[length].append(string)
+    return result
 
 def flatten_dict(nested_dict: Dict, sep: str = '.') -> Dict:
     """
@@ -26,8 +36,19 @@ def flatten_dict(nested_dict: Dict, sep: str = '.') -> Dict:
     :param sep: The separator to use between parent and child keys (defaults to '.')
     :return: A flattened dictionary
     """
-    # Your code here
-    return dict
+    flattened = {}
+    
+    def _flatten(d, parent_key=''):
+        for key, value in d.items():
+            new_key = f"{parent_key}{sep}{key}" if parent_key else key
+            
+            if isinstance(value, dict):
+                _flatten(value, new_key)
+            else:
+                flattened[new_key] = value
+    
+    _flatten(nested_dict)
+    return flattened
 
 def unique_permutations(nums: List[int]) -> List[List[int]]:
     """
@@ -36,8 +57,24 @@ def unique_permutations(nums: List[int]) -> List[List[int]]:
     :param nums: List of integers (may contain duplicates)
     :return: List of unique permutations
     """
-    # Your code here
-    pass
+    def backtrack(counter, current_perm):
+        if len(current_perm) == len(nums):
+            result.append(current_perm[:])
+            return
+        
+        for num in counter:
+            if counter[num] > 0:
+                current_perm.append(num)
+                counter[num] -= 1
+                
+                backtrack(counter, current_perm)
+                
+                current_perm.pop()
+                counter[num] += 1
+
+    result = []
+    backtrack(Counter(nums), [])
+    return result
 
 
 def find_all_dates(text: str) -> List[str]:
@@ -51,7 +88,8 @@ def find_all_dates(text: str) -> List[str]:
     Returns:
     List[str]: A list of valid dates in the formats specified.
     """
-    pass
+    pattern = r'\b(\d{2}-\d{2}-\d{4}|\d{2}/\d{2}/\d{4}|\d{4}\.\d{2}\.\d{2})\b'
+    return re.findall(pattern, text)
 
 def polyline_to_dataframe(polyline_str: str) -> pd.DataFrame:
     """
@@ -63,7 +101,28 @@ def polyline_to_dataframe(polyline_str: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A DataFrame containing latitude, longitude, and distance in meters.
     """
-    return pd.Dataframe()
+    coords = polyline.decode(polyline_str)
+    df = pd.DataFrame(coords, columns=['latitude', 'longitude'])
+    
+    def haversine_distance(lat1, lon1, lat2, lon2):
+        R = 6371000  
+        phi1, phi2 = radians(lat1), radians(lat2)
+        dphi = radians(lat2 - lat1)
+        dlambda = radians(lon2 - lon1)
+        
+        a = sin(dphi/2)**2 + cos(phi1)*cos(phi2)*sin(dlambda/2)**2
+        c = 2*atan2(sqrt(a), sqrt(1-a))
+        
+        return R * c
+    
+    df['distance'] = 0
+    for i in range(1, len(df)):
+        df.loc[i, 'distance'] = haversine_distance(
+            df.loc[i-1, 'latitude'], df.loc[i-1, 'longitude'],
+            df.loc[i, 'latitude'], df.loc[i, 'longitude']
+        )
+    
+    return df
 
 
 def rotate_and_multiply_matrix(matrix: List[List[int]]) -> List[List[int]]:
@@ -78,7 +137,15 @@ def rotate_and_multiply_matrix(matrix: List[List[int]]) -> List[List[int]]:
     - List[List[int]]: A new 2D list representing the transformed matrix.
     """
     # Your code here
-    return []
+    n = len(matrix)
+    
+    rotated = [[matrix[n-1-j][i] for j in range(n)] for i in range(n)]
+
+    row_sums = [sum(row) for row in rotated]
+    col_sums = [sum(col) for col in zip(*rotated)]
+    result = [[row_sums[i] + col_sums[j] - rotated[i][j] for j in range(n)] for i in range(n)]
+    
+    return result
 
 
 def time_check(df) -> pd.Series:

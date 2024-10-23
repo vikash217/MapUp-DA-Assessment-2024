@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def calculate_distance_matrix(df)->pd.DataFrame():
+def calculate_distance_matrix(df)->pd.DataFrame:
     """
     Calculate a distance matrix based on the dataframe, df.
 
@@ -16,7 +16,7 @@ def calculate_distance_matrix(df)->pd.DataFrame():
     return df
 
 
-def unroll_distance_matrix(df)->pd.DataFrame():
+def unroll_distance_matrix(df)->pd.DataFrame:
     """
     Unroll a distance matrix to a DataFrame in the style of the initial dataset.
 
@@ -31,7 +31,7 @@ def unroll_distance_matrix(df)->pd.DataFrame():
     return df
 
 
-def find_ids_within_ten_percentage_threshold(df, reference_id)->pd.DataFrame():
+def find_ids_within_ten_percentage_threshold(df, reference_id)->pd.DataFrame:
     """
     Find all IDs whose average distance lies within 10% of the average distance of the reference ID.
 
@@ -48,7 +48,7 @@ def find_ids_within_ten_percentage_threshold(df, reference_id)->pd.DataFrame():
     return df
 
 
-def calculate_toll_rate(df)->pd.DataFrame():
+def calculate_toll_rate(df)->pd.DataFrame:
     """
     Calculate toll rates for each vehicle type based on the unrolled DataFrame.
 
@@ -63,7 +63,7 @@ def calculate_toll_rate(df)->pd.DataFrame():
     return df
 
 
-def calculate_time_based_toll_rates(df)->pd.DataFrame():
+def calculate_time_based_toll_rates(df)->pd.DataFrame:
     """
     Calculate time-based toll rates for different time intervals within a day.
 

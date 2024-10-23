@@ -4,7 +4,6 @@ import pandas as pd
 import polyline
 from math import radians, sin, cos, sqrt, atan2
 
-
 def reverse_by_n_elements(lst: List[int], n: int) -> List[int]:
     """
     Reverses the input list by groups of n elements.
@@ -28,6 +27,7 @@ def group_by_length(lst: List[str]) -> Dict[int, List[str]]:
         result[length].append(string)
     return result
 
+
 def flatten_dict(nested_dict: Dict, sep: str = '.') -> Dict:
     """
     Flattens a nested dictionary into a single-level dictionary with dot notation for keys.
@@ -49,6 +49,7 @@ def flatten_dict(nested_dict: Dict, sep: str = '.') -> Dict:
     
     _flatten(nested_dict)
     return flattened
+
 
 def unique_permutations(nums: List[int]) -> List[List[int]]:
     """
@@ -136,7 +137,6 @@ def rotate_and_multiply_matrix(matrix: List[List[int]]) -> List[List[int]]:
     Returns:
     - List[List[int]]: A new 2D list representing the transformed matrix.
     """
-    # Your code here
     n = len(matrix)
     
     rotated = [[matrix[n-1-j][i] for j in range(n)] for i in range(n)]
@@ -158,6 +158,27 @@ def time_check(df) -> pd.Series:
     Returns:
         pd.Series: return a boolean series
     """
-    # Write your logic here
-
-    return pd.Series()
+    df['startTime'] = pd.to_datetime(df['startDay'] + ' ' + df['startTime'])
+    df['endTime'] = pd.to_datetime(df['endDay'] + ' ' + df['endTime'])
+    
+    def check_full_coverage(group):
+        group = group.sort_values('startTime')
+        
+        days_covered = set(group['startTime'].dt.dayofweek)
+        if len(days_covered) != 7:
+            return False
+        
+        start_time = group['startTime'].iloc[0]
+        end_time = group['endTime'].iloc[-1]
+        if (end_time - start_time).total_seconds() < 7 * 24 * 3600:
+            return False
+        
+        for i in range(len(group) - 1):
+            if group['startTime'].iloc[i+1] > group['endTime'].iloc[i]:
+                return False
+        
+        return True
+    
+    result = df.groupby(['id', 'id_2']).apply(check_full_coverage)
+    
+    return result

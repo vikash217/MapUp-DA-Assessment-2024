@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+from datetime import time
 
-def calculate_distance_matrix(df)->pd.DataFrame():
+def calculate_distance_matrix(df)->pd.DataFrame:
     """
     Calculate a distance matrix based on the dataframe, df.
 
@@ -17,13 +18,18 @@ def calculate_distance_matrix(df)->pd.DataFrame():
     
     distance_matrix = distance_matrix.combine_first(distance_matrix.T)
     
-    # Fill NaN values with 0
-    distance_matrix = distance_matrix.fillna(0)
-
+    for k in distance_matrix.index:
+        for i in distance_matrix.index:
+            for j in distance_matrix.columns:
+                if distance_matrix.at[i, j] > distance_matrix.at[i, k] + distance_matrix.at[k, j]:
+                    distance_matrix.at[i, j] = distance_matrix.at[i, k] + distance_matrix.at[k, j]
+    
+    distance_matrix = distance_matrix.combine_first(distance_matrix.T)
+    
     return distance_matrix
 
 
-def unroll_distance_matrix(df)->pd.DataFrame():
+def unroll_distance_matrix(df)->pd.DataFrame:
     """
     Unroll a distance matrix to a DataFrame in the style of the initial dataset.
 
@@ -42,7 +48,7 @@ def unroll_distance_matrix(df)->pd.DataFrame():
     return unrolled_df
 
 
-def find_ids_within_ten_percentage_threshold(df, reference_id)->pd.DataFrame():
+def find_ids_within_ten_percentage_threshold(df, reference_id)->pd.DataFrame:
     """
     Find all IDs whose average distance lies within 10% of the average distance of the reference ID.
 
@@ -68,7 +74,7 @@ def find_ids_within_ten_percentage_threshold(df, reference_id)->pd.DataFrame():
     return result_df
 
 
-def calculate_toll_rate(df)->pd.DataFrame():
+def calculate_toll_rate(df)->pd.DataFrame:
     """
     Calculate toll rates for each vehicle type based on the unrolled DataFrame.
 
@@ -96,7 +102,7 @@ def calculate_toll_rate(df)->pd.DataFrame():
     return df
 
 
-def calculate_time_based_toll_rates(df)->pd.DataFrame():
+def calculate_time_based_toll_rates(df)->pd.DataFrame:
     """
     Calculate time-based toll rates for different time intervals within a day.
 
@@ -107,19 +113,17 @@ def calculate_time_based_toll_rates(df)->pd.DataFrame():
         pandas.DataFrame
     """
     time_intervals = [
-        (time(0, 0), time(5, 0), 0.8),
-        (time(5, 0), time(10, 0), 1.2),
-        (time(10, 0), time(17, 0), 1.0),
-        (time(17, 0), time(20, 0), 1.2),
-        (time(20, 0), time(23, 59), 0.8)
+        (time(0, 0), time(10, 0), 0.8),
+        (time(10, 0), time(18, 0), 1.2),
+        (time(18, 0), time(23, 59, 59), 0.8)
     ]
     
     results = []
     
-    for (start, end), group in df.groupby(['id_start', 'id_end']):
+    for _, row in df.iterrows():
         for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']:
             for start_time, end_time, factor in time_intervals:
-                new_row = group.iloc[0].copy()
+                new_row = row.copy()
                 new_row['start_day'] = day
                 new_row['start_time'] = start_time
                 new_row['end_day'] = day
